@@ -28,7 +28,6 @@ class soundBoard():
     playlock = threading.Lock()
     samplePlaying = None
 
-
     def __init__(self):
         self.load_config()
         self.pyaudio = pyaudio.PyAudio()
@@ -47,8 +46,6 @@ class soundBoard():
 
         self.mqtt.on_connect = self.on_mqtt_connect
         self.mqtt.on_message = self.on_mqtt_message
-
-
 
     def load_config(self):
         """ Load the config"""
@@ -157,7 +154,6 @@ class soundBoard():
                 # Pay sample if we found it
                 if sample := self.find_sample(payload_split):
                     self.samplePlayer.sampleQueue.put(sample) #TODO wonder if we can speed this up by pre-loading?
-
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, filename='soundboard.log')

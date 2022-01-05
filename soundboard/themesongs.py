@@ -1,7 +1,7 @@
-import logging
-import json
 import os
 import re
+import json
+import logging
 
 class themeSongs():
     log = logging.getLogger("Theme Songs")

@@ -79,8 +79,6 @@ def float2pcm(sig, dtype='int16'):
     offset = i.min + abs_max
     return (sig * abs_max + offset).clip(i.min, i.max).astype(dtype)
 
-
-
 @contextlib.contextmanager
 def printoptions(*args, **kwargs):
     """Context manager for temporarily setting NumPy print options.
@@ -92,26 +90,3 @@ def printoptions(*args, **kwargs):
         yield
     finally:
         np.set_printoptions(**original)
-
-if __name__ == "__main__":
-    # load file to float32 
-    y,sr = librosa.load("1.wav",sr=None)
-
-
-    # convert to byte(PCM16)
-    byt = float_to_byte(y)
-
-
-    # save to pcm file
-    with open("1.pcm","wb") as f:
-        f.write(byt)
-
-    # read pcm file
-    with open("1.pcm","rb") as f:
-        byt = f.read()
-
-    # byte(PCM16) to float32
-    f = byte_to_float(byt)
-
-    # save float32 to PCM16 with soundfile
-    soundfile.write("2.wav",f,sr,'PCM_16')

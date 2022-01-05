@@ -1,13 +1,12 @@
-import pyaudio
-import rtttl
-import queue
-import logging
-import numpy
-import time
 import math
+import rtttl
+import numpy
+import queue
+import pyaudio
+import logging
 
-from tones import SINE_WAVE, SAWTOOTH_WAVE, TRIANGLE_WAVE, SQUARE_WAVE
 from tones.mixer import Mixer
+from tones import SINE_WAVE, SAWTOOTH_WAVE, TRIANGLE_WAVE, SQUARE_WAVE
 
 class toneGenerator():
     toneQueue = queue.Queue()
@@ -52,14 +51,14 @@ class toneGenerator():
         mixer = Mixer(44100, 1.0)
         mixer.create_track(0, SINE_WAVE)
 
-        for char in morse:
+        for char in morse: #TODO add to config
             if char == ".":
                 duration = 0.100
             else:
                 duration = 0.300
-
             mixer.add_tone(0, frequency=440, duration=duration, decay=0.0)
             mixer.add_silence(0, 0.100)
+
         self.stream.write(mixer.sample_data())
 
     def play_rtttl(self, ringtone):
@@ -69,17 +68,15 @@ class toneGenerator():
         mixer.create_track(2, SQUARE_WAVE)
 
         for note in rtttl.parse_rtttl(ringtone)['notes']:
-
            mixer.add_tone(1, frequency=note['frequency'] - 6,
-                             duration=note['duration'] / 1000, decay=0.2, amplitude=0.3)
+                            duration=note['duration'] / 1000, decay=0.2, amplitude=0.3)
            mixer.add_tone(0, frequency=note['frequency'],
-                             duration=note['duration'] / 1000, decay=0.1, amplitude=0.5)
+                            duration=note['duration'] / 1000, decay=0.1, amplitude=0.5)
            mixer.add_tone(2, frequency=note['frequency'] + 6,
-                                   duration=note['duration'] / 1000, decay=0.2, amplitude=0.3)
+                            duration=note['duration'] / 1000, decay=0.2, amplitude=0.3)
 
         self.stream.write(mixer.sample_data())
         self.soundboard.playlock.release()
-
 
     def play_tone(self, tone, freq, duration=1.0):
         self.log.info(f"Playing a {tone} with a freq of {freq} for {duration}")

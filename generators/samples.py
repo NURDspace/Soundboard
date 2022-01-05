@@ -1,6 +1,6 @@
-import pydub
 import os
 import queue
+import pydub
 import logging
 
 from pydub.playback import play
@@ -25,11 +25,13 @@ class samplePlayer():
         while True:
             sample = self.sampleQueue.get()
             self.soundboard.playlock.acquire()
-            print(sample == type(str))
+
             try:
+
                 if type(sample) == str:
                     self.log.info(f"Playing: {sample}")
                     sound = pydub.AudioSegment.from_file(sample, os.path.splitext(sample)[-1].split(".")[-1])
+
                 else:
                     sound = sample
                     self.log.info(f"Playing: {type(sample)}")

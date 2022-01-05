@@ -1,5 +1,5 @@
-import bottle
 import os
+import bottle
 
 class webserver(bottle.Bottle):
 
@@ -53,10 +53,12 @@ class webserver(bottle.Bottle):
 
     def api_play_sample(self, name):
         samples = self.get_samples()
+
         for sample in samples:
             if name in sample['name']:
                 self.soundboard.samplePlayer.play_sample(sample['path'])
                 return {"response": "OK"}
+
         return {"response": "FAIL", "MSG": f"Couldn't find {name}"}
 
     def api_tone_square(self, freq):

@@ -1,5 +1,6 @@
-import logging
 import time
+import logging
+
 from mpd import MPDClient
 
 class mpdClient():
@@ -55,9 +56,8 @@ class mpdClient():
         if self.mpd_status()['state'] == "pause":
             self.mpd_togglepause()
 
-
 class mpdWrapper(object):
-    # A simple context manager around the MPDclient lib
+    """ A simple context manager around the MPDclient lib """
     log = logging.getLogger("MPD Wrapper")
 
     def __init__(self, host="localhost", port=6600):
