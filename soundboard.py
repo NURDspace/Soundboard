@@ -78,6 +78,8 @@ class soundBoard():
             self.log.info(f"Subscribing MQTT to {sub}")
             self.mqtt.subscribe(sub)
 
+        self.log.info("Soundboard is ready!")
+
     def on_mqtt_message(self, client, userdata, msg):
         """
             Once a new MQTT message has arrived, serves
@@ -157,7 +159,7 @@ class soundBoard():
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, filename='soundboard.log')
-    coloredlogs.install(level='DEBUG', fmt="%(asctime)s %(name)s %(levelname)s %(message)s")
+    coloredlogs.install(level='INFO', fmt="%(asctime)s %(name)s %(levelname)s %(message)s")
     sb = soundBoard()
     tracemalloc.start() # debug
     sb.start()
