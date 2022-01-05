@@ -1,0 +1,17 @@
+[Unit]
+Description=Theme songs
+After=multi-user.target
+Conflicts=getty@tty1.service
+
+[Service]
+Type=simple
+User=nurds
+Group=nurds
+ExecStart=/usr/bin/python3 /home/nurds/soundboard/soundboard.py
+StandardInput=tty-force
+WorkingDirectory=/home/nurds/soundboard
+RestartSec=5s
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
