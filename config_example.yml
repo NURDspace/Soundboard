@@ -1,0 +1,25 @@
+sample_path: "samples/"
+
+webserver: 8080
+mqtt:
+    host: localhost
+    port: 1883
+    subscribe:
+        - soundboard/#
+        - doorbell
+        - space/door/front
+
+speech:
+    cache: "cache/"
+    defaultMethod: 15ai
+
+mpd:
+    host: "spacesound.dhcp.nurd.space"
+    port: 6600
+    ramp:
+        enabled: True
+        down: 10
+        up: 10
+        delay: 0.050
+
+themesongs: /mnt/mp3/themes
