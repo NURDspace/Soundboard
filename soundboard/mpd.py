@@ -25,8 +25,7 @@ class mpdClient():
 
     def volume(self, volume):
         with mpdWrapper(self.host, self.port) as client:
-            client.volume(volume)
-
+            client.setvol(volume)
 
     def ramp(self, size, start, end):
         self.log.debug(f"size: {size} | start: {start} | end: {end}")
@@ -40,11 +39,25 @@ class mpdClient():
 
     def volume_ramp_down(self, endvolume):
         with mpdWrapper(self.host, self.port) as client:
-            for step in self.ramp(self.soundboard.config['mpd']['ramp']['down'], int(client.status()['volume']), endvolume):
+            startvolume = int(client.status()['volume'])
+            if endvolume == startvolume:
+                return endvolume, startvolume
+            for step in self.ramp(self.soundboard.config['mpd']['ramp']['down'], startvolume, endvolume):
                 self.log.debug(f"Ramping down step: {step} > {endvolume}")
+                client.setvol(step)
+                time.sleep(self.soundboard.config['mpd']['ramp']['delay'])
+            return int(client.status()['volume']), startvolume
+
+    def volume_ramp_up(self, endvolume):
+        with mpdWrapper(self.host, self.port) as client:
+            startvolume = int(client.status()['volume'])
+            if endvolume == startvolume:
+                return endvolume, startvolume
+            for step in self.ramp(self.soundboard.config['mpd']['ramp']['up'], endvolume, startvolume):
+                self.log.debug(f"Ramping up step: {step} > {endvolume}")
                 client.volume(step)
                 time.sleep(self.soundboard.config['mpd']['ramp']['delay'])
-            return client.status()['volume']
+            return int(client.status()['volume']), startvolume
 
     def mpd_should_pause(self):
         """ Will only pause MPD if it's actually playing"""

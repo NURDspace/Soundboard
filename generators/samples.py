@@ -27,7 +27,6 @@ class samplePlayer():
             self.soundboard.playlock.acquire()
 
             try:
-
                 if type(sample) == str:
                     self.log.info(f"Playing: {sample}")
                     sound = pydub.AudioSegment.from_file(sample, os.path.splitext(sample)[-1].split(".")[-1])
@@ -36,7 +35,10 @@ class samplePlayer():
                     sound = sample
                     self.log.info(f"Playing: {type(sample)}")
 
+                self.soundboard.mpd.volume_ramp_down(70)
                 play(pydub.effects.normalize(sound)) # Play (fixme)
+                if self.sampleQueue.empty:
+                    self.soundboard.mpd.volume_ramp_up(100)
 
             except Exception as e:
                 import traceback

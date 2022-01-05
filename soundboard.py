@@ -1,7 +1,7 @@
-import json
 import os
 import re
 import yaml
+import json
 import pyaudio
 import logging
 import threading
