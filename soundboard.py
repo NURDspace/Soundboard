@@ -28,7 +28,7 @@ class soundBoard():
     playlock = threading.Lock()
     samplePlaying = None
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.load_config()
         self.pyaudio = pyaudio.PyAudio()
         self.mqtt = mqtt.Client()
@@ -47,7 +47,7 @@ class soundBoard():
         self.mqtt.on_connect = self.on_mqtt_connect
         self.mqtt.on_message = self.on_mqtt_message
 
-    def load_config(self):
+    def load_config(self) -> None:
         """ Load the config"""
         # FIXME
         with open("config.yml", "r") as f:
@@ -55,7 +55,7 @@ class soundBoard():
 
         self.log.info(f"Samples available: {len(os.listdir(self.config['sample_path']))}")
 
-    def start(self):
+    def start(self) -> None:
         """ Start the threads and then use the main thread for the MQTT loop"""
         self.threads = {
             threading.Thread(name="Webserver", target=self.webserver.webserver_thread),
@@ -71,7 +71,7 @@ class soundBoard():
         self.log.debug(self.threads)
         self.mqtt.loop_forever()
 
-    def on_mqtt_connect(self, client, userdata, flags, rc):
+    def on_mqtt_connect(self, client:mqtt.Client, userdata:any, flags:dict, rc:int) -> None:
         """ When we succesfully connected to MQTT, we can subscribe"""
         self.log.info("MQTT connected.")
         for sub in self.config['mqtt']['subscribe']:
@@ -80,7 +80,7 @@ class soundBoard():
 
         self.log.info("Soundboard is ready!")
 
-    def on_mqtt_message(self, client, userdata, msg):
+    def on_mqtt_message(self, client:mqtt.Client, userdata:any, msg: mqtt.MQTTMessage) -> None:
         """
             Once a new MQTT message has arrived, serves
             as a wrapper for exceptions so that the entire
@@ -93,13 +93,13 @@ class soundBoard():
             self.log.error(f"Error during on_mqtt_message: {e}")
             traceback.print_exc()
 
-    def find_sample(self, sample_name):
+    def find_sample(self, sample_name: str) -> None:
         """ Search in the sample folder and return a sample if found"""
         for file in os.listdir(self.config['sample_path']):
             if re.search(sample_name, file, re.IGNORECASE):
                 return os.path.join(self.config['sample_path'], file)
 
-    def on_mqtt_message_handle(self, client, userdata, msg):
+    def on_mqtt_message_handle(self, client:mqtt.Client, userdata:any, msg: mqtt.MQTTMessage) -> None:
         """ Hande MQTT message events"""
         self.log.debug(f"MQTT {msg.topic} >> {msg.payload.decode('utf-8')}")
 
@@ -155,7 +155,7 @@ class soundBoard():
 
                 # Pay sample if we found it
                 if sample := self.find_sample(payload_split):
-                    self.samplePlayer.sampleQueue.put(sample) #TODO wonder if we can speed this up by pre-loading?
+                    self.samplePlayer.sampleQueue.put(sample)
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, filename='soundboard.log')

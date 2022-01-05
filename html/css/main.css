@@ -1,4 +1,12 @@
-.btn {
+body {
+  padding-bottom: 20px;
+}
 
+.navbar {
+  margin-bottom: 20px;
+}
+
+
+.btn {
   margin-top: 5px;
 }
