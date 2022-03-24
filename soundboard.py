@@ -100,7 +100,7 @@ class soundBoard():
                 return os.path.join(self.config['sample_path'], file)
 
     def on_mqtt_message_handle(self, client:mqtt.Client, userdata:any, msg: mqtt.MQTTMessage) -> None:
-        """ Hande MQTT message events"""
+        """ Handle MQTT message events"""
         self.log.debug(f"MQTT {msg.topic} >> {msg.payload.decode('utf-8')}")
 
         if msg.topic == "space/door/front": # send to themesongs
