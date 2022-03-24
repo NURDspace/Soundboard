@@ -71,7 +71,7 @@ class webserver(bottle.Bottle):
 
     def get_samples(self):
         samples = []
-        for sample in os.listdir(self.soundboard.config['sample_path']):
+        for sample in sorted(os.listdir(self.soundboard.config['sample_path'])):
             if not os.path.isdir(os.path.join(self.soundboard.config['sample_path'], sample)):
                 samples.append({"name": os.path.splitext(sample)[0],
                                 "ext": os.path.splitext(sample)[-1],

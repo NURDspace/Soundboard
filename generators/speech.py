@@ -1,15 +1,14 @@
+
+from shlex import shlex
+import subprocess
 import os
 import re
-import io
 import json
 import pydub
-import librosa
 import hashlib
 import logging
 import requests
-
-from pydub.playback import play
-from soundboard import audio_format
+from pydub import playback
 
 class speechGenerator():
     log = logging.getLogger("speech")
@@ -54,6 +53,23 @@ class speechGenerator():
         else:
             self.log.error(f"Unknown method {method}")
 
+    def convert_bitdepth_sox(self, input, output):
+        """
+            Use sox to convert any input to 16 bit wav
+        """
+        if not os.path.exists(input):
+            raise FileNotFoundError(f"Failed to find {input}")
+        
+        subprocess.call([
+            self.soundboard.config['binaries']['sox'],
+            input, "-b", "16", output
+            ]
+        )
+
+        if not os.path.exists(output):
+            raise FileNotFoundError(f"Failed to find {output}")
+
+
     def fifteen_ai(self, character, text) -> tuple((pydub.AudioSegment, str)):
         """
             Uses the 15ai api to generate voices using machine learning,
@@ -61,24 +77,28 @@ class speechGenerator():
         """
         fifteen = FifteenAPI()
 
+
         # 15ai does not support numbers (such as 1, 2, 3 etc)
-        # There for we convert numbers<int> to actual words first
+        # Therefor we convert numbers<int> to actual words first
         self.log.info(f"Generate \"{text}\" with {character} (15ai)")
-        tts = fifteen.get_tts_raw(character, re.sub("[0-9]+", lambda nmbr:self.numbers_to_words(int(nmbr.group(0))), text))
+        tts = fifteen.get_tts_raw(character, re.sub("[0-9]+", lambda num:self.numbers_to_words(int(num.group(0))), text))
 
         if tts["status"] == "OK" and tts["data"] is not None:
             self.log.info(f"Got {len(tts['data'])} bytes from fifteen.ai")
 
-            # 15ai returns the data as float32 wav, so use some trickery
+            # 15ai returns the data as float32 wav, so we use sox
             # to convert this to "signed 16-bit little endian PCM so
             # that we can play it with pydub
-            ioBytes = io.BytesIO(tts['data'])
-            ioBytes.seek(0)
-            y, sr = librosa.load(ioBytes,sr=None)
-            convertedBytes = io.BytesIO(audio_format.float_to_byte(y))
-            audio = pydub.AudioSegment.from_file(convertedBytes, format="raw", sample_width=2,
-                                              channels=1, frame_rate=44100)
-            play(audio)
+            
+            cacheFile = os.path.join(self.soundboard.config['speech']['cache'], "tmp15ai32.wav")
+            cacheFileOutput = os.path.join(self.soundboard.config['speech']['cache'], "tmp15ai16.wav")
+
+            with open(cacheFile, "wb") as fout:
+                fout.write(tts["data"])
+
+            self.convert_bitdepth_sox(cacheFile, cacheFileOutput)
+            audio = pydub.AudioSegment.from_wav(cacheFileOutput)
+            pydub.playback.play(audio)
             return audio, "wav"
 
         self.log.error(f"Failed to generate \"{text}\" with {character} (15ai)")
@@ -152,11 +172,11 @@ class FifteenAPI:
         "access-control-allow-origin": "*",
         "content-type": "application/json;charset=UTF-8",
         "origin": "https://fifteen.ai",
-        "referer": "https://fifteen.ai/app",
+        "referrer": "https://fifteen.ai/app",
         "sec-fetch-dest": "empty",
         "sec-fetch-mode": "cors",
         "sec-fetch-site": "same-site",
-        "user-agent": "python-requests 15.ai-Python-API(https://github.com/wafflecomposite/15.ai-Python-API)"
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:98.0) Gecko/20100101 Firefox/98.0"
     }
 
     tts_url = "https://api.15.ai/app/getAudioFile5"

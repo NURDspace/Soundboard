@@ -23,7 +23,7 @@ class themeSongs():
 
             for file in os.listdir(self.soundboard.config['themesongs']):
                 if re.search(payload_json['name'], file, re.IGNORECASE):
-                    self.log.logging.info(f"Theme song for {payload_json['name']} is {file}")
+                    self.log.info(f"Theme song for {payload_json['name']} is {file}")
 
                     self.soundboard.samplePlayer.sampleQueue.put(
                         os.path.join(self.soundboard.config['themesongs'], file))

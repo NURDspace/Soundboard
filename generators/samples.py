@@ -34,11 +34,13 @@ class samplePlayer():
                 else:
                     sound = sample
                     self.log.info(f"Playing: {type(sample)}")
+                status = self.soundboard.mpd.mpd_status()
 
-                self.soundboard.mpd.volume_ramp_down(70)
+                if "volume" in status:
+                    self.soundboard.mpd.volume_ramp_down(70)
                 play(pydub.effects.normalize(sound)) # Play (fixme)
-                if self.sampleQueue.empty:
-                    self.soundboard.mpd.volume_ramp_up(100)
+                if self.sampleQueue.empty and "volume" in status:
+                    self.soundboard.mpd.volume_ramp_up(int(status['volume']))
 
             except Exception as e:
                 import traceback
