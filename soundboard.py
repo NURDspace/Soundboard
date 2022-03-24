@@ -16,6 +16,7 @@ import soundboard.themesongs
 import generators.samples
 import generators.tones
 import generators.speech
+import generators.door
 
 # TODO:
 #    - test Intro tunes
@@ -40,6 +41,7 @@ class soundBoard():
         self.speech = generators.speech.speechGenerator(self)
         self.samplePlayer = generators.samples.samplePlayer(self)
         self.toneGenerator = generators.tones.toneGenerator(self)
+        self.doorbell = generators.door.door(self)
 
         self.mqtt.enable_logger(logging.getLogger("MQTT"))
         self.mqtt.connect(self.config['mqtt']['host'], self.config['mqtt']['port'], 60)
@@ -49,7 +51,6 @@ class soundBoard():
 
     def load_config(self) -> None:
         """ Load the config"""
-        # FIXME
         with open("config.yml", "r") as f:
             self.config = yaml.load(f, Loader=yaml.FullLoader)
 
@@ -105,6 +106,9 @@ class soundBoard():
 
         if msg.topic == "space/door/front": # send to themesongs
             self.themeSongs.mqtt_trigger(msg.payload.decode("utf-8"))
+
+        if msg.topic == "deurbel":
+            self.doorbell.mqtt_trigger(msg.payload.decode("utf-8"))
 
         # Handle all the speech events
         # Takes a json dict with the following parameters

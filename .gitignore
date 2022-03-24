@@ -2,6 +2,7 @@
 samples/
 cache/
 config.yml
+doorbel/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
