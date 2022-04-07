@@ -1,17 +1,18 @@
 import time
-import logging
 import mpd 
+import logging
 import threading
-from typing import List, Tuple
+
 from mpd import MPDClient
 
 class mpdclient():
     log = logging.getLogger("MPD Client")
+    mpd_lock = threading.Lock()
 
     def __init__(self, soundboard) -> None:
-        #self.soundboard = soundboard
-        self.host = "localhost" #self.soundboard.config['mpd']['host']
-        self.port = 6600 #self.soundboard.config['mpd']['port']
+        self.soundboard = soundboard
+        self.host = self.soundboard.config['mpd']['host']
+        self.port = self.soundboard.config['mpd']['port']
         
         self.client = MPDClient()
         self.client.connect(self.host, self.port)
@@ -24,16 +25,19 @@ class mpdclient():
         self.log.info("MPD client keep alive started")
         while True:
             try:
+                self.mpd_lock.acquire()
                 self.client.status()
+                self.mpd_lock.release()
             except mpd.base.ConnectionError:
                 self.client.connect(self.host, self.port)
             finally:
                 time.sleep(1)
 
-
     def mpd_togglepause(self) -> None:
         """ Pause MPD """
+        self.mpd_lock.acquire()
         self.client.pause()
+        self.mpd_lock.release()
 
     def mpd_status(self) -> dict:
         """ Return MPD status"""
@@ -44,9 +48,9 @@ class mpdclient():
         return status
 
     def volume(self, volume:int) -> None:
-        if self.client._sock == None:
-            self.client.connect(self.host, self.port)
+        self.mpd_lock.acquire()
         self.client.setvol(volume)
+        self.mpd_lock.release()
 
     def ramp(self, size:int, start:int, end:int) -> list:
         self.log.debug(f"size: {size} | start: {start} | end: {end}")

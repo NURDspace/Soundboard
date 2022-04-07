@@ -2,7 +2,6 @@ import os
 import re
 import yaml
 import json
-import pyaudio
 import logging
 import threading
 import tracemalloc
@@ -33,7 +32,6 @@ class soundBoard():
 
     def __init__(self) -> None:
         self.load_config()
-        #self.pyaudio = pyaudio.PyAudio()
         self.mqtt = mqtt.Client()
         self.pulse = soundboard.pulseaudio.pulseaudio()
 
