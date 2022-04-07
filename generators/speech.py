@@ -1,14 +1,15 @@
 
-from shlex import shlex
+
 import subprocess
 import os
 import re
 import json
 import pydub
+import shutil
 import hashlib
 import logging
 import requests
-from pydub import playback
+
 
 class speechGenerator():
     log = logging.getLogger("speech")
@@ -41,15 +42,14 @@ class speechGenerator():
                     self.log.info(f"Playing cached speech {os.path.basename(hashed_file)} (15ai)")
                     return self.soundboard.samplePlayer.sampleQueue.put(hashed_file)
 
-            audio, format = self.fifteen_ai(name, text)
+            audioFile = self.fifteen_ai(name, text)
 
-            if audio:
+            if audioFile:
                 hashed_text = self.hashtext(f"{text}_{name}")
                 if cache:
                     # Save file if caching enabled
                     self.log.info(f"Saving speech to cache as {os.path.basename(hashed_file)} (15ai)")
-                    audio.export(os.path.join(self.soundboard.config['speech']['cache'], f"{hashed_text}.wav"),
-                                    format=format)
+                    shutil.copy(audioFile, hashed_file)
         else:
             self.log.error(f"Unknown method {method}")
 
@@ -97,9 +97,8 @@ class speechGenerator():
                 fout.write(tts["data"])
 
             self.convert_bitdepth_sox(cacheFile, cacheFileOutput)
-            audio = pydub.AudioSegment.from_wav(cacheFileOutput)
-            pydub.playback.play(audio)
-            return audio, "wav"
+            self.soundboard.samplePlayer.sampleQueue.put(cacheFileOutput)
+            return cacheFileOutput
 
         self.log.error(f"Failed to generate \"{text}\" with {character} (15ai)")
         return None, None
@@ -156,7 +155,8 @@ class speechGenerator():
                 if (g >=1 ) and ((h + t + u) > 0):
                     words.append(thousands[g] + ',')
 
-        if join: return ' '.join(words)
+        if join: 
+            return ' '.join(words)
         return words
 
 class FifteenAPI:
