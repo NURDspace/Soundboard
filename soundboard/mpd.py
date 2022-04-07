@@ -58,7 +58,7 @@ class mpdClient():
                 startvolume = int(client.status()['volume'])
                 if endvolume == startvolume:
                     return endvolume, startvolume
-                for step in self.ramp(self.soundboard.config['mpd']['ramp']['up'], endvolume, startvolume):
+                for step in reversed(self.ramp(self.soundboard.config['mpd']['ramp']['up'], endvolume, startvolume)):
                     self.log.debug(f"Ramping up step: {step} > {endvolume}")
                     client.volume(step)
                     time.sleep(self.soundboard.config['mpd']['ramp']['delay'])

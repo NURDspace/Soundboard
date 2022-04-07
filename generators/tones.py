@@ -14,7 +14,7 @@ class toneGenerator():
 
     def __init__(self, soundboard):
         self.soundboard = soundboard
-        self.stream = self.soundboard.pyaudio.open(format=pyaudio.paInt16, channels=1, rate=44100, output=True)
+        #self.stream = self.soundboard.pyaudio.open(format=pyaudio.paInt16, channels=1, rate=44100, output=True)
 
     def tone_thread(self):
         while True:
@@ -59,7 +59,7 @@ class toneGenerator():
             mixer.add_tone(0, frequency=440, duration=duration, decay=0.0)
             mixer.add_silence(0, 0.100)
 
-        self.stream.write(mixer.sample_data())
+        self.soundboard.pulse.write(mixer.sample_data())
 
     def play_rtttl(self, ringtone):
         mixer = Mixer(44100, 1.0)
@@ -75,7 +75,7 @@ class toneGenerator():
            mixer.add_tone(2, frequency=note['frequency'] + 6,
                             duration=note['duration'] / 1000, decay=0.2, amplitude=0.3)
 
-        self.stream.write(mixer.sample_data())
+        self.soundboard.pulse.write(mixer.sample_data())
         self.soundboard.playlock.release()
 
     def play_tone(self, tone, freq, duration=1.0):
@@ -83,7 +83,7 @@ class toneGenerator():
         mixer = Mixer(44100, 1.0)
         mixer.create_track(0, tone)
         mixer.add_tone(0, frequency=freq, duration=duration, decay=0.1)
-        self.stream.write(mixer.sample_data())
+        self.soundboard.pulse.write(mixer.sample_data())
 
     def sine_wave(self, frequency, length, rate):
         length = int(length * rate)

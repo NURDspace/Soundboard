@@ -9,9 +9,10 @@ import tracemalloc
 import coloredlogs
 import paho.mqtt.client as mqtt
 
-import soundboard.mpd
+import soundboard.mpdclient
 import soundboard.webserver
 import soundboard.themesongs
+import soundboard.pulseaudio
 
 import generators.samples
 import generators.tones
@@ -28,20 +29,22 @@ class soundBoard():
     threads = {}
     playlock = threading.Lock()
     samplePlaying = None
+    running = False
 
     def __init__(self) -> None:
         self.load_config()
-        self.pyaudio = pyaudio.PyAudio()
+        #self.pyaudio = pyaudio.PyAudio()
         self.mqtt = mqtt.Client()
+        self.pulse = soundboard.pulseaudio.pulseaudio()
 
-        self.mpd = soundboard.mpd.mpdClient(self)
+        self.mpd = soundboard.mpdclient.mpdclient(self)
         self.themeSongs = soundboard.themesongs.themeSongs(self)
         self.webserver = soundboard.webserver.webserver("0.0.0.0", self.config['webserver'], self)
 
         self.speech = generators.speech.speechGenerator(self)
         self.samplePlayer = generators.samples.samplePlayer(self)
         self.toneGenerator = generators.tones.toneGenerator(self)
-        self.doorbell = generators.door.door(self)
+        self.door = generators.door.door(self)
 
         self.mqtt.enable_logger(logging.getLogger("MQTT"))
         self.mqtt.connect(self.config['mqtt']['host'], self.config['mqtt']['port'], 60)
@@ -108,7 +111,10 @@ class soundBoard():
             self.themeSongs.mqtt_trigger(msg.payload.decode("utf-8"))
 
         if msg.topic == "deurbel":
-            self.doorbell.mqtt_trigger(msg.payload.decode("utf-8"))
+            self.door.doorbell_mqtt_trigger(msg.payload.decode("utf-8"))
+        
+        if msg.topic == "door/door_closed":
+            self.door.door_mqtt_trigger(msg.payload.decode("utf-8"))
 
         # Handle all the speech events
         # Takes a json dict with the following parameters
@@ -154,12 +160,15 @@ class soundBoard():
                         if duration > 5.0:
                             duration = 5.0
                         tone['duration'] = duration
+                    
+                    # Disable the tone generator for now
+                    #self.toneGenerator.toneQueue.put(tone)
 
-                    self.toneGenerator.toneQueue.put(tone)
-
-                # Pay sample if we found it
+                # Pay sample if we can find it
                 if sample := self.find_sample(payload_split):
                     self.samplePlayer.sampleQueue.put(sample)
+
+        self.running = True
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, filename='soundboard.log')
