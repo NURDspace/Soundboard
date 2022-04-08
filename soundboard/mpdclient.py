@@ -19,7 +19,6 @@ class mpdclient():
         
         threading.Thread(target=self.mpd_keepalive).start()
 
-    
     def mpd_keepalive(self):
         """ Keep MPD connection alive or reconnect when an error happens."""
         self.log.info("MPD client keep alive started")
